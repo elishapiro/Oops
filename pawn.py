@@ -1,4 +1,6 @@
 # pawn.py
+from typing import Type
+
 
 class Pawn:
     """ Create Oops! pawn """
@@ -13,18 +15,22 @@ class Pawn:
         self.SLIDER1_4 = 21
         self.SLIDER2_4 = 36
         self.SLIDER3_4 = 51
-
         self.NUMBER_OF_PAWNS = 4  # denote constant number of pawns
+
         self.position = 0  # denote starting position
         self.player = player  # denote player
         self.number = pawnNumber  # denote pawn number
         self.pawnBut = None  # initialize pawn button
+        self.isMoved = False  # initialize boolean indicating whether pawn has moved
 
     def move(self, amt, playerBoards, pawns):
         """ Moves pawn by amt.
             Input: amt - integer amount to move pawn
                    playerBoards - list of each player's board
                    pawns - list of each player's list of pawns """
+
+        # indicate that pawn has moved
+        self.isMoved = True
 
         # handling the case where pawn moves backwards 4 near "Start"
         if self.position in [1, 2, 3] and amt == -4:
@@ -71,17 +77,15 @@ class Pawn:
         else:
             # modify pawn's position
             self.position = self.position + ds
-            # slide if appropriate
-            if self.position in [self.SLIDER1_3, self.SLIDER2_3, self.SLIDER3_3,
-                                 self.SLIDER1_4, self.SLIDER2_4, self.SLIDER3_4]:
-                self.slide(playerBoards, pawns)
-            # otherwise, if pawn lands on another pawn's position
-            elif playerBoards[self.player - 1][self.position] in pawnPlaces:
+            # if pawn lands on another pawn's position
+            if playerBoards[self.player - 1][self.position] in pawnPlaces:
                 # determine where other pawn is in the list
                 otherPawnNum = pawnPlaces.index(playerBoards[self.player - 1][self.position])
                 otherPawnLoc = pawnPlaces[otherPawnNum]
                 # send other pawn home
                 self.__sendHome(otherPawnLoc, pawnPlaces, pawns)
+            # slide if appropriate
+            self.slide(playerBoards, pawns)
 
     def swap(self, playerPawn, playerBoards, swapCard, pawns):
         """ Swap positions with another player's pawn.
@@ -90,10 +94,18 @@ class Pawn:
                     swapCard - card under which the swap is occurring (either "11" or "Oops!")
                     pawns - list of each player's list of pawns """
 
+        # indicate that our pawn has moved
+        self.setIsMoved(True)
+
+        # get list of each player's pawns' board places
+        _, pawnPlaces = self.__getPosAndPlace(playerBoards, pawns)
         # record which player (minus 1 for indexing)
         whichPlayer = playerPawn[0] - 1
         # record which pawn (minus 1 for indexing)
         whichPawn = playerPawn[1] - 1
+        # indicate that swappee has moved
+        pawns[whichPlayer][whichPawn].setIsMoved(True)
+
         # create list of each player's list of pawn positions
         pawnPositions = []
         for playerNum in range(len(playerBoards)):
@@ -110,6 +122,8 @@ class Pawn:
         swappeeBoard = playerBoards[whichPlayer]
         # denote place on which the swappee lies
         swappeePlace = swappeeBoard[swappee]
+        # denote swappeePawn
+        swappeePawn = pawns[whichPlayer][whichPawn]
 
         if swapCard == "11":
             try:
@@ -131,7 +145,7 @@ class Pawn:
             # modify swapper's position
             self.position = swapperNewPos
             # modify swappee's position
-            pawns[whichPlayer][whichPawn].changePosition(swappeeNewPos)
+            swappeePawn.changePosition(swappeeNewPos)
         else:
             try:
                 # denote new position of swapper
@@ -142,7 +156,7 @@ class Pawn:
             # modify swapper's position
             self.position = swapperNewPos
             # send swappee to start
-            pawns[whichPlayer][whichPawn].changePosition(0)
+            swappeePawn.changePosition(0)
 
         # slide swapper if appropriate
         self.slide(playerBoards, pawns)
@@ -165,14 +179,14 @@ class Pawn:
             # modify pawn's position
             self.position = self.position + 3
             # iterate through squares just slid over
-            for square in playerBoards[self.player - 1][self.position - 3:self.position + 1]:
+            for square in playerBoards[self.player - 1][self.position - 2:self.position + 1]:
                 # send pawn back home if it's on the slider
                 if square in pawnPlaces:
                     self.__sendHome(square, pawnPlaces, pawns)
         elif self.position in [self.SLIDER1_4, self.SLIDER2_4, self.SLIDER3_4]:
             self.position = self.position + 4
             # iterate through squares slided through
-            for square in playerBoards[self.player - 1][self.position - 4: self.position + 1]:
+            for square in playerBoards[self.player - 1][self.position - 3: self.position + 1]:
                 # send pawn back home if it's on the slider
                 if square in pawnPlaces:
                     self.__sendHome(square, pawnPlaces, pawns)
@@ -191,18 +205,23 @@ class Pawn:
             if pawns[0][whichPawn] != self:
                 # send other pawn back home
                 pawns[0][whichPawn].changePosition(0)
+                # indicate that other pawn has moved
+                pawns[0][whichPawn].setIsMoved(True)
         elif whichPawn <= 7:
             # if other pawn is not this pawn
             if pawns[1][whichPawn % 4] != self:
                 pawns[1][whichPawn % 4].changePosition(0)
+                pawns[1][whichPawn % 4].setIsMoved(True)
         elif whichPawn <= 11:
             # if other pawn is not this pawn
             if pawns[2][whichPawn % 4] != self:
                 pawns[2][whichPawn % 4].changePosition(0)
+                pawns[2][whichPawn % 4].setIsMoved(True)
         else:
             # if other pawn is not this pawn
             if pawns[3][whichPawn % 4] != self:
                 pawns[3][whichPawn % 4].changePosition(0)
+                pawns[3][whichPawn % 4].setIsMoved(True)
 
     def __getPosAndPlace(self, playerBoards, pawns):
         """ This helper method creates and returns a list of each player's pawns'
@@ -246,7 +265,20 @@ class Pawn:
         """ Returns position of pawn """
         return self.position
 
+    def getPlayer(self):
+        """ Returns position of pawn """
+        return self.player
+
     def changePosition(self, newPos):
         """ Changes position of pawn to newPos """
         self.position = newPos
+
+    def getIsMoved(self):
+        """ Returns whether pawn moved in previous turn """
+        return self.isMoved
+
+    def setIsMoved(self, aBool):
+        """ Sets whether pawn moved in previous turn """
+        self.isMoved = aBool
+
 

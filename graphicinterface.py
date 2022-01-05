@@ -59,16 +59,19 @@ class GraphicInterface:
         self.allPawns = []
 
     def movePawns(self, pawns):
-        """ Draws pawns according to their position; inputs list of players' and
-        list of pawn positions. """
+        """ Draws pawns according to their position.
+            Inputs list of each player's list of pawns. """
 
         # create constants for home and start positions
         START_POS = 0
         HOME_POS = 65
-        # undraw all previous pawns
-        for pawn in self.allPawns:
-            pawn.undraw()
-        # initialize updated list of all players' pawns
+        # undraw pawns that have been moved
+        for playerPawns in pawns:  # loop through player's list of pawns
+            for pawn in playerPawns:  # loop through pawns
+                if pawn.getIsMoved():  # if pawn moved
+                    pawn.getPawnBut().undraw()  # undraw pawn
+
+        # initialize updated list of all players' pawn buttons
         self.allPawns = []
         # loop through players
         for playerNum in range(1, len(pawns) + 1):
@@ -81,34 +84,38 @@ class GraphicInterface:
             # initialize counter representing pawnNum
             pawnNum = 0
             for pos in positions:  # loop through player's pawns' positions
-                # increment counter
+                # increment pawnNum
                 pawnNum = pawnNum + 1
-                # denote where pawn is
-                pawnPlace = board[pos]
-                # initialize pawn location
-                pawnLoc = copy.deepcopy(pawnPlace.getCenter())
-                if pos == START_POS or pos == HOME_POS:  # if pawn is home...
-                    if pawnNum == 1:  # first pawn
-                        pawnLoc.move(-2, 2)
-                    elif pawnNum == 2:  # second pawn
-                        pawnLoc.move(2, 2)
-                    elif pawnNum == 3:  # third pawn
-                        pawnLoc.move(-2, -2)
-                    else:  # counter == 4:
-                        pawnLoc.move(2, -2)  # fourth pawn
-                # create pawn
-                pawn = CircButton(self.win, pawnLoc, 1, "")
-                # set pawn button
-                pawns[playerNum-1][pawnNum-1].setPawnBut(pawn)
-                # color pawn according to player
-                if playerNum == 1:
-                    pawn.color("gold")
-                elif playerNum == 2:
-                    pawn.color("green")
-                elif playerNum == 3:
-                    pawn.color("red")
-                else:
-                    pawn.color("blue")
+                if (pawns[playerNum-1][pawnNum-1].getIsMoved()  # if pawn has been moved
+                        or pawns[playerNum-1][pawnNum-1].getPawnBut() is None):  # or pawn hasn't been drawn yet
+                    # denote that pawn has no longer been moved
+                    pawns[playerNum - 1][pawnNum-1].setIsMoved(False)
+                    # denote where pawn is
+                    pawnPlace = board[pos]
+                    # initialize pawn location
+                    pawnLoc = copy.deepcopy(pawnPlace.getCenter())
+                    if pos == START_POS or pos == HOME_POS:  # if pawn is in start or home...
+                        if pawnNum == 1:  # first pawn
+                            pawnLoc.move(-2, 2)
+                        elif pawnNum == 2:  # second pawn
+                            pawnLoc.move(2, 2)
+                        elif pawnNum == 3:  # third pawn
+                            pawnLoc.move(-2, -2)
+                        else:  # counter == 4:
+                            pawnLoc.move(2, -2)  # fourth pawn
+                    # create pawn
+                    pawn = CircButton(self.win, pawnLoc, 1, "")
+                    # set pawn button
+                    pawns[playerNum - 1][pawnNum - 1].setPawnBut(pawn)
+                    # color pawn according to player
+                    if playerNum == 1:
+                        pawn.color("gold")
+                    elif playerNum == 2:
+                        pawn.color("green")
+                    elif playerNum == 3:
+                        pawn.color("red")
+                    else:
+                        pawn.color("blue")
                 # add pawn to list of all pawns
                 self.allPawns.append(pawn)
 

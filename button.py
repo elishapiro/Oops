@@ -83,6 +83,13 @@ class SquareButton(Button):
                 self.xmin <= p.getX() <= self.xmax and
                 self.ymin <= p.getY() <= self.ymax)
 
+    def clickedActiveOrNot(self, p):
+        """Returns true if p is inside button, regardless of whether
+           button is active or not """
+        return (p and
+                self.xmin <= p.getX() <= self.xmax and
+                self.ymin <= p.getY() <= self.ymax)
+
     def color(self, color):
         """ Colors this button """
         self.rect.setFill(color)
@@ -122,6 +129,10 @@ class SquareButton(Button):
     def isDeactivated(self):
         """ Returns boolean indicating whether button is deactivated """
         return not self.active
+
+    def setActive(self, isActive):
+        """ Sets self.active ot isActive """
+        self.active = isActive
 
     def undraw(self):
         """ Undraws button """

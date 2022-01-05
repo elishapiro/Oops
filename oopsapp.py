@@ -1,5 +1,6 @@
 # oopsapp.py
 
+from cpuplayer import CPUPlayer
 from player import Player
 from graphicinterface import GraphicInterface
 from deck import *
@@ -8,9 +9,9 @@ from deck import *
 class OopsApp:
     """ Creates a Oops! game. """
 
-    def __init__(self, quantity):
+    def __init__(self, quantity, isCPU):
         """ Initializes the Oops! game.
-         Input: number of players. """
+         Input: quantity - number of players. """
 
         self.quantity = quantity  # denote quantity of players
 
@@ -22,8 +23,12 @@ class OopsApp:
 
         self.players = []  # initialize player list
         for playerNum in range(1, quantity + 1):  # add user-specified quantity of players
-            # add player
-            self.players.append(Player(playerNum, self.deck, self.interface))
+            if isCPU[playerNum-1]:  # if this player is a CPU
+                # add CPU player
+                self.players.append(CPUPlayer(playerNum, self.deck, self.interface))
+            else:
+                # add human player
+                self.players.append(Player(playerNum, self.deck, self.interface))
 
         self.pawns = []  # initialize list of players' lists of pawns
         for playerNum in range(quantity):

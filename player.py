@@ -18,6 +18,13 @@ class Player:
         self.WEIRD_LOCATIONS = [-1, 66]
         # initialize start location
         self.START_LOCATION = 0
+        # denote slider positions
+        self.SLIDER1_3 = 13
+        self.SLIDER2_3 = 28
+        self.SLIDER3_3 = 43
+        self.SLIDER1_4 = 21
+        self.SLIDER2_4 = 36
+        self.SLIDER3_4 = 51
 
         # denote which player
         self.player = whichPlayer
@@ -46,16 +53,8 @@ class Player:
     def doTurn(self, playerBoards, pawns):
         """ Player does turn """
 
-        # activate draw card button
-        self.drawCard = self.interface.getDrawCard()
-        if self.player == 1:
-            self.drawCard.color("yellow")
-        elif self.player == 2:
-            self.drawCard.color("lightgreen")
-        elif self.player == 3:
-            self.drawCard.color("pink")
-        else:  # self.whichPlayer == 4:
-            self.drawCard.color("lightblue")
+        # draw & display card
+        self.getCard()
         self.drawCard.activate()
 
         # activate quit button
@@ -80,50 +79,50 @@ class Player:
 
                 # determine what to do based on the card
                 if card == 1:
-                    self.__showCard(1)  # show card
+                    self.showCard(1)  # show card
                     self.__implementCard(1, playerBoards, pawns)  # implement card
                     break  # get out of while loop
                 elif card == 2:
-                    self.__showCard(2)
+                    self.showCard(2)
                     self.__implementCard(2, playerBoards, pawns)
                     # undraw card
                     self.Crect.undraw()
                     self.Ctext.undraw()
                     return "2"  # repeat turn
                 elif card == 3:
-                    self.__showCard(3)
+                    self.showCard(3)
                     self.__implementCard(3, playerBoards, pawns)
                     break
                 elif card == 4:
-                    self.__showCard(4)
+                    self.showCard(4)
                     self.__implementCard(4, playerBoards, pawns)
                     break
                 elif card == 5:
-                    self.__showCard(5)
+                    self.showCard(5)
                     self.__implementCard(5, playerBoards, pawns)
                     break
                 elif card == 7:
-                    self.__showCard(7)
+                    self.showCard(7)
                     self.__implementCard(7, playerBoards, pawns)
                     break  # get out of while loop
                 elif card == 8:
-                    self.__showCard(8)
+                    self.showCard(8)
                     self.__implementCard(8, playerBoards, pawns)
                     break
                 elif card == 10:
-                    self.__showCard(10)
+                    self.showCard(10)
                     self.__implementCard(10, playerBoards, pawns)
                     break
                 elif card == 11:
-                    self.__showCard(11)
+                    self.showCard(11)
                     self.__implementCard(11, playerBoards, pawns)
                     break
                 elif card == 12:
-                    self.__showCard(12)
+                    self.showCard(12)
                     self.__implementCard(12, playerBoards, pawns)
                     break
                 else:  # card == "Oops!"
-                    self.__showCard("Oops!")
+                    self.showCard("Oops!")
                     self.__implementCard("Oops!", playerBoards, pawns)
                     break
 
@@ -273,12 +272,12 @@ class Player:
                         activatedButtons.append([pPawns[counter],
                                                  playerBoard[pos + 56], -4])
                 elif pos == 4:
-                    if -1 not in self.getPawnPositions():  # -1 is weird spot
+                    if -1 not in self.getPawnPositions() and 66 not in self.getPawnPositions():
                         # activate weird spot
                         playerBoard[-1].activate()
                         activatedButtons.append([pPawns[counter],
                                                  playerBoard[-1], -4])
-                elif pos == -1:  # if pos is weird spot
+                elif pos in self.WEIRD_LOCATIONS:  # if pos is weird spot
                     if 56 not in self.getPawnPositions():
                         # activate place 56
                         playerBoard[56].activate()
@@ -369,7 +368,7 @@ class Player:
                                         # make sure user isn't in an impossible
                                         #   situation (i.e., user can only move one more pawn and
                                         #   but all places are occupied)
-                                        if self.__canMoveFirstWith7(pPawns[pawnIndex], offset):
+                                        if self.canMoveFirstWith7(pPawns[pawnIndex], offset):
                                             # activate board place
                                             playerBoard[newPos].activate()
                                             # add (pawn, place, offset) to activatedButtons
@@ -466,7 +465,7 @@ class Player:
                         activatedButtons.append([pPawns[counter], playerBoard[newPos], 10])
                 if pos not in [self.START_LOCATION, self.HOME_LOCATION]:
                     if pos == 1:  # if pawn is on position after start
-                        if -1 not in self.getPawnPositions():
+                        if -1 not in self.getPawnPositions() and 66 not in self.getPawnPositions():
                             # activate "the weird spot"
                             playerBoard[-1].activate()
                             activatedButtons.append([pPawns[counter], playerBoard[-1], -1])
@@ -476,7 +475,7 @@ class Player:
                             playerBoard[59].activate()
                             activatedButtons.append([pPawns[counter], playerBoard[59], -1])
                     else:
-                        if pos - 1 not in self.getPawnPositions():
+                        if -1 not in self.getPawnPositions() and 66 not in self.getPawnPositions():
                             # activate position before pawn
                             playerBoard[pos - 1].activate()
                             activatedButtons.append([pPawns[counter], playerBoard[pos - 1], -1])
@@ -642,18 +641,10 @@ class Player:
         # deactivate forfeit
         self.forfeit.deactivate()
 
-    def __canMoveFirstWith7(self, pawnToMove, amountToMove):
+    def canMoveFirstWith7(self, pawnToMove, amountToMove):
         """ This method returns a boolean indicating whether a user can move pawnToMove by amountToMove
             as the first move after drawing Card 7. That is, it determines whether any active pawn other
             than pawnToMove can move by 7 - amountToMove after the first move. """
-
-        # denote slider positions
-        self.SLIDER1_3 = 13
-        self.SLIDER2_3 = 28
-        self.SLIDER3_3 = 43
-        self.SLIDER1_4 = 21
-        self.SLIDER2_4 = 36
-        self.SLIDER3_4 = 51
 
         if amountToMove == 7:  # if user moves pawnToMove by 7
             # don't need to worry about moving another pawn, so return true
@@ -841,7 +832,7 @@ class Player:
                     but[1].deactivate()
                 break  # break from outer while true loop
 
-    def __showCard(self, card):
+    def showCard(self, card):
         """ Helper function that graphically displays card drawn """
 
         # create card outline
@@ -920,3 +911,17 @@ class Player:
     def getPawns(self):
         """ Returns list of player's pawns """
         return self.pawns
+
+    def getCard(self):
+        """ Get next card in Oops! deck """
+
+        # activate draw card button
+        self.drawCard = self.interface.getDrawCard()
+        if self.player == 1:
+            self.drawCard.color("yellow")
+        elif self.player == 2:
+            self.drawCard.color("lightgreen")
+        elif self.player == 3:
+            self.drawCard.color("pink")
+        else:  # self.whichPlayer == 4:
+            self.drawCard.color("lightblue")
