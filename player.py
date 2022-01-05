@@ -147,12 +147,10 @@ class Player:
 
         # initialize boolean indicating whether turn is over
         toBreak = False
-        # initialize counter
-        counter = 0
+        # initialize pawnIndex
+        pawnIndex = 0
 
         if cardNum == 1:
-            # initialize pawn index
-            pawnIndex = 0
             # activate appropriate pawns & places
             for pos in self.getPawnPositions():
                 if pos == self.START_LOCATION:
@@ -202,8 +200,6 @@ class Player:
                         but[1].deactivate()
                     break  # get out of while true loop
         elif cardNum == 2:
-            # initialize pawn index
-            pawnIndex = 0
             # activate appropriate pawns & places
             for pos in self.getPawnPositions():
                 if pos == self.START_LOCATION:
@@ -269,27 +265,27 @@ class Player:
                     if pos + 56 not in self.getPawnPositions():
                         playerBoard[pos + 56].activate()
                         # activatedButtons stores pairs of (pawn, corresponding activated place, offset)
-                        activatedButtons.append([pPawns[counter],
+                        activatedButtons.append([pPawns[pawnIndex],
                                                  playerBoard[pos + 56], -4])
                 elif pos == 4:
                     if -1 not in self.getPawnPositions() and 66 not in self.getPawnPositions():
                         # activate weird spot
                         playerBoard[-1].activate()
-                        activatedButtons.append([pPawns[counter],
+                        activatedButtons.append([pPawns[pawnIndex],
                                                  playerBoard[-1], -4])
                 elif pos in self.WEIRD_LOCATIONS:  # if pos is weird spot
                     if 56 not in self.getPawnPositions():
                         # activate place 56
                         playerBoard[56].activate()
-                        activatedButtons.append([pPawns[counter],
+                        activatedButtons.append([pPawns[pawnIndex],
                                                 playerBoard[56], -4])
                 else:
                     if pos != self.START_LOCATION and pos != self.HOME_LOCATION:
                         if pos - 4 not in self.getPawnPositions():
                             playerBoard[pos - 4].activate()
-                            activatedButtons.append([pPawns[counter],
+                            activatedButtons.append([pPawns[pawnIndex],
                                                      playerBoard[pos - 4], -4])
-                counter = counter + 1  # increment counter
+                pawnIndex += 1  # increment pawnIndex
 
             # if user can't do anything
             if len(activatedButtons) == 0:
@@ -303,8 +299,6 @@ class Player:
             # simple implementation
             self.__implementSimpleCard(5, playerBoards, pawns)
         elif cardNum == 7:
-            # initialize pawnIndex counter
-            pawnIndex = 0
             # initialize list of active pawns
             activePawns = []
             for pos in self.getPawnPositions():  # iterate through player's pawns' positions
@@ -312,7 +306,7 @@ class Player:
                     # add to activePawns
                     activePawns.append(pPawns[pawnIndex])
                 # increment pawn index
-                pawnIndex = pawnIndex + 1
+                pawnIndex += 1
             if len(activePawns) <= 1:  # if there's one or fewer active pawns
                 # simple implementation
                 self.__implementSimpleCard(7, playerBoards, pawns)
@@ -328,7 +322,7 @@ class Player:
 
                     # if I've already moved a pawn
                     if len(pawnsMoved) == 1:
-                        # initialize pawnIndex counter
+                        # initialize pawnIndex
                         pawnIndex = 0
                         # activate appropriate pawns & places
                         for pos in self.getPawnPositions():
@@ -344,7 +338,7 @@ class Player:
                                     playerBoard[newPos].activate()
                                     activatedButtons.append([pPawns[pawnIndex], playerBoard[newPos]])
                             # increment pawn index
-                            pawnIndex = pawnIndex + 1
+                            pawnIndex += 1
                         # get user input
                         self.__simpleUserInput(squaresLeft, playerBoards, pawns, activatedButtons)
                         # break from while loop
@@ -374,7 +368,7 @@ class Player:
                                             # add (pawn, place, offset) to activatedButtons
                                             activatedButtons.append([pPawns[pawnIndex],
                                                                      playerBoard[newPos], offset])
-                            pawnIndex = pawnIndex + 1  # increment counter
+                            pawnIndex += 1  # increment pawnIndex
 
                         # if user can't do anything
                         if len(activatedButtons) == 0:
@@ -391,14 +385,11 @@ class Player:
                             break  # get out of while loop
                         for button in activatedButtons:  # loop through player board
                             if p and button[1].clicked(p):  # if pos clicked
-                                implicatedPawns = []  # initialize list of which pawns are implicated
-                                otherButs = []  # initialize list of other buttons
+                                impButs = []  # initialize list of which buttons are implicated
                                 for otherBut in activatedButtons:  # determine # of pawns button[1] corresponds to
-                                    if (otherBut[1].getCenter().getX() == button[1].getCenter().getX() and
-                                            otherBut[1].getCenter().getY() == button[1].getCenter().getY()):
-                                        implicatedPawns.append(otherBut[0].getPawnNumber())
-                                        otherButs.append(otherBut)
-                                if len(implicatedPawns) == 1:  # if only one pawn corresponds to but[1]
+                                    if otherBut[1] == button[1]:
+                                        impButs.append(otherBut)
+                                if len(impButs) == 1:  # if only one pawn corresponds to but[1]
                                     # move appropriate pawn by offset
                                     button[0].move(button[2], playerBoards, pawns)
                                     # update pawn positions
@@ -417,34 +408,31 @@ class Player:
                                         if innerButton[1] != button[1]:
                                             innerButton[1].deactivate()
                                     # activate appropriate pawns
-                                    for pawnNum in implicatedPawns:
-                                        pPawns[pawnNum - 1].getPawnBut().activate()
+                                    for impBut in impButs:
+                                        impBut[0].getPawnBut().activate()
                                     # get user input
                                     while True:
                                         point = self.oopsWindow.checkMouse()
-                                        # iterate through implicated pawn numbers
-                                        for pawnNum in implicatedPawns:
+                                        # iterate through implicated buttons
+                                        for impBut in impButs:
                                             # if pawn is clicked
-                                            if p and pPawns[pawnNum - 1].getPawnBut().clicked(point):
-                                                # loop through implicated (pawn, button, offset) 3-tuples
-                                                for otherB in otherButs:
-                                                    # if corresponding pawn's # is pawnNum
-                                                    if otherB[0].getPawnNumber() == pawnNum:
-                                                        # move corresponding pawn by offset
-                                                        pPawns[pawnNum - 1].move(otherB[2], playerBoards, pawns)
-                                                        # update pawn positions
-                                                        self.updatePawnPositions(pawns)
-                                                        # update pawnsMoved
-                                                        pawnsMoved.append(pPawns[pawnNum - 1])
-                                                        # update squares left
-                                                        squaresLeft = squaresLeft - otherB[2]
+                                            if point and impBut[0].getPawnBut().clicked(point):
+                                                # move corresponding pawn by offset
+                                                impBut[0].move(impBut[2], playerBoards, pawns)
+                                                # update pawn positions
+                                                self.updatePawnPositions(pawns)
+                                                # update pawnsMoved
+                                                pawnsMoved.append(impBut[0])
+                                                # update squares left
+                                                squaresLeft = squaresLeft - impBut[2]
                                                 # flip toBreak boolean flag
                                                 toBreak = True
-                                                # deactivate appropriate buttons
-                                                for but in activatedButtons:
-                                                    but[1].deactivate()
-                                                break  # break from for pawnNum loop
+                                                break  # break from for impBut loop
                                         if toBreak:
+                                            # deactivate appropriate pawn buttons and board buttons
+                                            for impBut in impButs:
+                                                impBut[0].getPawnBut().deactivate()
+                                                impBut[1].deactivate()
                                             break  # break from while loop
                                 break  # break from for button loop
         elif cardNum == 8:
@@ -462,24 +450,24 @@ class Player:
                         # activate ten positions after pawn
                         playerBoard[newPos].activate()
                         # activatedButtons consists of 3-tuples: (pawn, activated board spot, offset)
-                        activatedButtons.append([pPawns[counter], playerBoard[newPos], 10])
+                        activatedButtons.append([pPawns[pawnIndex], playerBoard[newPos], 10])
                 if pos not in [self.START_LOCATION, self.HOME_LOCATION]:
                     if pos == 1:  # if pawn is on position after start
                         if -1 not in self.getPawnPositions() and 66 not in self.getPawnPositions():
                             # activate "the weird spot"
                             playerBoard[-1].activate()
-                            activatedButtons.append([pPawns[counter], playerBoard[-1], -1])
+                            activatedButtons.append([pPawns[pawnIndex], playerBoard[-1], -1])
                     elif pos in self.WEIRD_LOCATIONS:  # if pawn is on weird spot
                         if 59 not in self.getPawnPositions():
                             # activate place 59
                             playerBoard[59].activate()
-                            activatedButtons.append([pPawns[counter], playerBoard[59], -1])
+                            activatedButtons.append([pPawns[pawnIndex], playerBoard[59], -1])
                     else:
-                        if -1 not in self.getPawnPositions() and 66 not in self.getPawnPositions():
+                        if pos - 1 not in self.getPawnPositions():
                             # activate position before pawn
                             playerBoard[pos - 1].activate()
-                            activatedButtons.append([pPawns[counter], playerBoard[pos - 1], -1])
-                counter = counter + 1  # increment counter
+                            activatedButtons.append([pPawns[pawnIndex], playerBoard[pos - 1], -1])
+                pawnIndex += 1  # increment pawnIndex
 
             # if user can't do anything
             if len(activatedButtons) == 0:
@@ -508,7 +496,9 @@ class Player:
                         if newPos == self.HOME_LOCATION or newPos not in self.getPawnPositions():
                             # activate 11 positions after pawn
                             playerBoard[newPos].activate()
-                            activatedButtons.append(playerBoard[newPos])
+                            activatedButtons.append([pPawns[pawnIndex], playerBoard[newPos]])
+                # increment pawnIndex
+                pawnIndex += 1
 
             # if user can't move pawn 11
             if len(activatedButtons) == 0:
@@ -537,7 +527,7 @@ class Player:
                             toBreak = True
                             # deactivate appropriate pawns & places
                             for but in activatedButtons:
-                                but.deactivate()
+                                but[1].deactivate()
                             # activate players' active pawns
                             for ourPawn in pPawns:
                                 if ourPawn.getPosition() not in [self.START_LOCATION, self.HOME_LOCATION,
@@ -571,20 +561,17 @@ class Player:
                         break  # break from for playerIndex loop
 
                 # determine whether player wants to move 11
-                for place in range(len(playerBoard)):  # loop through player board
-                    if p and playerBoard[place].clicked(p):  # if pos clicked
+                for button in activatedButtons:  # loop through activated buttons
+                    # if board place is clicked indicating user wants to move a pawn by 11
+                    if p and (button[0] is not None) and button[1].clicked(p):
                         # move appropriate pawn
-                        for pawn in pPawns:
-                            if pawn.getPosition() + 11 == place:
-                                pawn.move(11, playerBoards, pawns)
-                                toBreak = True
-                                break  # get out of for pawn loop
-                        break  # get out of for place loop
-
+                        button[0].move(11, playerBoards, pawns)
+                        toBreak = True
+                        break  # get out of for button loop
                 if toBreak:
                     # deactivate appropriate pawns & places
                     for but in activatedButtons:
-                        but.deactivate()
+                        but[1].deactivate()
                     break  # get out of while true loop
 
         elif cardNum == 12:
@@ -593,8 +580,6 @@ class Player:
         else:  # cardNum == "Oops!"
             # initialize boolean flag indicating whether there's a pawn in start
             pawnInStart = False
-            # initialize counter representing pawn index
-            pawnIndex = 0
             # initialize variable for this player's pawn to swap
             toSwap = None
             for pos in self.getPawnPositions():
@@ -604,7 +589,7 @@ class Player:
                     # flip boolean flag
                     pawnInStart = True
                     break  # exit for pos loop
-                pawnIndex = pawnIndex + 1  # increment pawnIndex
+                pawnIndex += 1  # increment pawnIndex
             if pawnInStart:
                 # activate buttons corresponding to other players' active pawns
                 activatedButtons = self.__activateOtherPawns(pawns, activatedButtons)
@@ -621,7 +606,7 @@ class Player:
                 if p and self.forfeit.clicked(p):
                     # deactivate appropriate pawns & places
                     for but in activatedButtons:
-                        but.deactivate()
+                        but[1].deactivate()
                     break  # exit while true loop
                 # determine whether user wants to swap
                 for playerIndex in range(len(playerBoards)):  # loop through player indices
@@ -630,7 +615,7 @@ class Player:
                             toBreak = True  # flip boolean flag
                             # deactivate appropriate pawns & places
                             for but in activatedButtons:
-                                but.deactivate()
+                                but[1].deactivate()
                             # swap this player's pawn in start with other player's clicked-on pawn
                             toSwap.swap([playerIndex + 1, pawn.getPawnNumber()], playerBoards, "Oops!", pawns)
                             break  # exit for pawn loop
@@ -865,12 +850,15 @@ class Player:
                             for aButton in implicatedButs:  # loop through implicated
                                 #                   (pawn, board spot, offset) 3-tuples
                                 # if associated pawn is clicked
-                                if p and aButton[0].getPawnBut().clicked(point):
+                                if point and aButton[0].getPawnBut().clicked(point):
                                     # move that pawn by offset
                                     aButton[0].move(aButton[2], playerBoards, pawns)
                                     toBreak = True  # flip boolean flag
                                     break  # break from for aButton loop
                             if toBreak:
+                                # deactivate implied buttons
+                                for aButton in implicatedButs:
+                                    aButton[0].getPawnBut().deactivate()
                                 break  # break from inner while true loop
                     break  # break from for but loop
             if toBreak:
@@ -895,7 +883,7 @@ class Player:
                                                   64, 63, 62, 61, 60]:
                         # activate pawn
                         pawn.getPawnBut().activate()
-                        activatedButtons.append(pawn.getPawnBut())
+                        activatedButtons.append([None, pawn.getPawnBut()])
 
         return activatedButtons
 

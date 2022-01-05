@@ -333,10 +333,10 @@ class CPUPlayer(Player):
                 # get random feasible move
                 randomIndex = randrange(0, len(feasibleMoves))
                 # if random move is a swap
-                if feasibleMoves[randomIndex][0].getPlayer() != self.player:
+                if feasibleMoves[randomIndex][0] is None:
                     # get (player #, pawn #) of feasibleMoves[randomIndex][1]
-                    swappeePlayer = feasibleMoves[randomIndex][0].getPlayer()
-                    swappeeNum = feasibleMoves[randomIndex][0].getPawnNumber()
+                    swappeePlayer = feasibleMoves[randomIndex][1].getPlayer()
+                    swappeeNum = feasibleMoves[randomIndex][1].getPawnNumber()
                     # swap a random one of our player's unsafe active pawns
                     activePawns[randrange(0, len(activePawns))].swap([swappeePlayer, swappeeNum],
                                                                      playerBoards, "11", pawns)
@@ -373,7 +373,7 @@ class CPUPlayer(Player):
                 pass
             else:
                 # get random unsafe active pawn of opponent
-                ranPawn = feasibleMoves[randrange(0, len(feasibleMoves))][0]
+                ranPawn = feasibleMoves[randrange(0, len(feasibleMoves))][1]
                 # get random pawn's player
                 swappeePlayer = ranPawn.getPlayer()
                 # get random pawn's number
@@ -431,6 +431,6 @@ class CPUPlayer(Player):
                     if pawn.getPosition() not in [self.START_LOCATION, self.HOME_LOCATION,
                                                   64, 63, 62, 61, 60]:
                         # add pawn to pawnPlace
-                        pawnPlace.append([pawn])
+                        pawnPlace.append([None, pawn])
 
         return pawnPlace
