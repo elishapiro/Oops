@@ -182,7 +182,7 @@ class CPUPlayer(Player):
                     # add to activePawns
                     activePawns.append(pPawns[pawnIndex])
                 # increment pawn index
-                pawnIndex = pawnIndex + 1
+                pawnIndex += 1
             if len(activePawns) <= 1:  # if there's one or fewer active pawns
                 # simple implementation
                 self.__implementSimpleCard(7, playerBoards, pawns)
@@ -213,7 +213,7 @@ class CPUPlayer(Player):
                                     # add (pawn, place) to feasibleMoves
                                     feasibleMoves.append([pPawns[pawnIndex], playerBoard[newPos]])
                             # increment pawn index
-                            pawnIndex = pawnIndex + 1
+                            pawnIndex += 1
                         # move random pawn
                         randomIndex = randrange(0, len(feasibleMoves))
                         feasibleMoves[randomIndex][0].move(squaresLeft, playerBoards, pawns)
@@ -241,7 +241,7 @@ class CPUPlayer(Player):
                                         if self.canMoveFirstWith7(pPawns[pawnIndex], offset):
                                             # add (pawn, place, offset) to feasibleMoves
                                             feasibleMoves.append([pPawns[pawnIndex], playerBoard[newPos], offset])
-                            pawnIndex += pawnIndex  # increment pawnIndex
+                            pawnIndex += 1  # increment pawnIndex
 
                         # if CPU can't do anything
                         if len(feasibleMoves) == 0:
@@ -251,10 +251,13 @@ class CPUPlayer(Player):
                             # make random move
                             randomIndex = randrange(0, len(feasibleMoves))
                             feasibleMoves[randomIndex][0].move(feasibleMoves[randomIndex][2], playerBoards, pawns)
+                            # update pawn positions
+                            self.updatePawnPositions(pawns)
                             # add appropriate pawn to pawnsMoved
                             pawnsMoved.append(feasibleMoves[randomIndex][0])
                             # modify squares left
                             squaresLeft = squaresLeft - feasibleMoves[randomIndex][2]
+
         elif cardNum == 8:
             # simple implementation
             self.__implementSimpleCard(8, playerBoards, pawns)
@@ -358,7 +361,7 @@ class CPUPlayer(Player):
                     # flip boolean flag
                     pawnInStart = True
                     break  # exit for pos loop
-                pawnIndex = pawnIndex + 1  # increment pawnIndex
+                pawnIndex += 1  # increment pawnIndex
 
             if pawnInStart:
                 # add other players' unsafe active pawns to feasibleMoves

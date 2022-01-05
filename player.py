@@ -402,7 +402,7 @@ class Player:
                                     # move appropriate pawn by offset
                                     button[0].move(button[2], playerBoards, pawns)
                                     # update pawn positions
-                                    self.__updatePawnPositions(pawns)
+                                    self.updatePawnPositions(pawns)
                                     # update squaresLeft
                                     squaresLeft = squaresLeft - button[2]
                                     # update pawnsMoved
@@ -433,7 +433,7 @@ class Player:
                                                         # move corresponding pawn by offset
                                                         pPawns[pawnNum - 1].move(otherB[2], playerBoards, pawns)
                                                         # update pawn positions
-                                                        self.__updatePawnPositions(pawns)
+                                                        self.updatePawnPositions(pawns)
                                                         # update pawnsMoved
                                                         pawnsMoved.append(pPawns[pawnNum - 1])
                                                         # update squares left
@@ -696,18 +696,65 @@ class Player:
                                           self.HOME_LOCATION + 1))):  # if position viable
                     if pos in self.WEIRD_LOCATIONS:  # if pos is weird spot
                         if (amountSecondMove not in otherPawnPositions and
-                                amountSecondMove != newPawnPos):  # add extra space
+                                (amountSecondMove != newPawnPos or newPawnPos == 65)):  # add extra space
                             # flip boolean flag
                             canMove = True
                             break  # exit for pos loop
                     else:
                         if (pos + amountSecondMove not in otherPawnPositions and
-                                pos + amountSecondMove != newPawnPos):
+                                (pos + amountSecondMove != newPawnPos or newPawnPos == 65)):
                             # flip boolean flag
                             canMove = True
                             break  # exit for pos loop
 
             return canMove
+
+    def updatePawnPositions(self, pawns):
+        """ This method updates pawnPositions and moves pawns accordingly on
+            graphical interface.
+            Input: list of each player's list of pawns """
+
+        # initialize list of each players' list of pawn positions
+        pawnPositions = []
+        for player in range(len(pawns)):  # iterate through players
+            newPositions = []  # initialize player's list of pawn positions
+            for pawn in range(self.NUMBER_OF_PAWNS):  # iterate through pawns
+                # append to new pawn positions of player
+                newPositions.append(pawns[player][pawn].getPosition())
+            # append to new list of players' pawn positions
+            pawnPositions.append(newPositions)
+        self.interface.movePawns(pawns)  # update pawns graphically
+
+    def showCard(self, card):
+        """ Helper function that graphically displays card drawn """
+
+        # create card outline
+        rect = Rectangle(Point(45, 40), Point(55, 50))
+        rect.setWidth(6)
+        if self.player == 1:
+            rect.setFill("yellow")
+        elif self.player == 2:
+            rect.setFill("lightgreen")
+        elif self.player == 3:
+            rect.setFill("pink")
+        else:  # whichPlayer == 4:
+            rect.setFill("lightblue")
+        # draw card outline
+        rect.draw(self.oopsWindow)
+
+        # create text
+        text = Text(rect.getCenter(), "{0}".format(card))
+        text.setStyle("bold")
+        if card == "Oops!":
+            text.setSize(36)
+        else:
+            text.setSize(50)
+        # draw text
+        text.draw(self.oopsWindow)
+
+        # create instance variables to undraw
+        self.Crect = rect
+        self.Ctext = text
 
     def __implementSimpleCard(self, cardNum, playerBoards, pawns):
         """ This method performs necessary actions in the most simple (yet most
@@ -831,53 +878,6 @@ class Player:
                 for but in activatedButtons:
                     but[1].deactivate()
                 break  # break from outer while true loop
-
-    def showCard(self, card):
-        """ Helper function that graphically displays card drawn """
-
-        # create card outline
-        rect = Rectangle(Point(45, 40), Point(55, 50))
-        rect.setWidth(6)
-        if self.player == 1:
-            rect.setFill("yellow")
-        elif self.player == 2:
-            rect.setFill("lightgreen")
-        elif self.player == 3:
-            rect.setFill("pink")
-        else:  # whichPlayer == 4:
-            rect.setFill("lightblue")
-        # draw card outline
-        rect.draw(self.oopsWindow)
-
-        # create text
-        text = Text(rect.getCenter(), "{0}".format(card))
-        text.setStyle("bold")
-        if card == "Oops!":
-            text.setSize(36)
-        else:
-            text.setSize(50)
-        # draw text
-        text.draw(self.oopsWindow)
-
-        # create instance variables to undraw
-        self.Crect = rect
-        self.Ctext = text
-
-    def __updatePawnPositions(self, pawns):
-        """ This method updates pawnPositions and moves pawns accordingly on
-            graphical interface.
-            Input: list of each player's list of pawns """
-
-        # initialize list of each players' list of pawn positions
-        pawnPositions = []
-        for player in range(len(pawns)):  # iterate through players
-            newPositions = []  # initialize player's list of pawn positions
-            for pawn in range(self.NUMBER_OF_PAWNS):  # iterate through pawns
-                # append to new pawn positions of player
-                newPositions.append(pawns[player][pawn].getPosition())
-            # append to new list of players' pawn positions
-            pawnPositions.append(newPositions)
-        self.interface.movePawns(pawns)  # update pawns graphically
 
     def __activateOtherPawns(self, pawns, activatedButtons):
         """ This helper method activates the buttons corresponding to each
