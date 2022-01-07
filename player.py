@@ -680,14 +680,14 @@ class Player:
                                list(range(self.HOME_LOCATION - amountSecondMove + 1,
                                           self.HOME_LOCATION + 1))):  # if position viable
                     if pos in self.WEIRD_LOCATIONS:  # if pos is weird spot
-                        if (amountSecondMove not in otherPawnPositions and
+                        if ((amountSecondMove not in otherPawnPositions or amountSecondMove == 65) and
                                 (amountSecondMove != newPawnPos or newPawnPos == 65)):  # add extra space
                             # flip boolean flag
                             canMove = True
                             break  # exit for pos loop
                     else:
-                        if (pos + amountSecondMove not in otherPawnPositions and
-                                (pos + amountSecondMove != newPawnPos or newPawnPos == 65)):
+                        if ((pos + amountSecondMove not in otherPawnPositions or pos + amountSecondMove == 65)
+                                and (pos + amountSecondMove != newPawnPos or newPawnPos == 65)):
                             # flip boolean flag
                             canMove = True
                             break  # exit for pos loop
