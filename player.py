@@ -516,7 +516,7 @@ class Player:
                 if p and self.forfeit.clicked(p):
                     # deactivate appropriate pawns & places
                     for but in activatedButtons:
-                        but.deactivate()
+                        but[1].deactivate()
                     break  # exit while true loop
 
                 # determine whether user wants to swap
