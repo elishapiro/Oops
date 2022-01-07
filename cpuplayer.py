@@ -120,7 +120,7 @@ class CPUPlayer(Player):
                     if pos + 1 not in self.getPawnPositions():
                         # feasibleMoves elements are (pawn, new board location, offset)
                         feasibleMoves.append([pPawns[pawnIndex], playerBoard[self.START_LOCATION], 1])
-                elif pos != self.HOME_LOCATION:
+                elif pos not in [64, self.HOME_LOCATION]:
                     if pos in self.WEIRD_LOCATIONS:  # if pawn is on weird spot
                         newPos = 2
                     else:
